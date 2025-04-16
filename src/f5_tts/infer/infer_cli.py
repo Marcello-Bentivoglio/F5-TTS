@@ -163,53 +163,6 @@ if not ckpt_file_it:
  
 ema_model_it = load_model(model_cls, model_cfg.arch, ckpt_file_it, mel_spec_type=vocoder_name, vocab_file=vocab_file_it, use_ema=use_ema)
 ema_model_gen = load_model(model_cls, model_cfg.arch, ckpt_file_gen, mel_spec_type=vocoder_name, vocab_file=vocab_file_gen, use_ema=True)
-
-number_words = {
-    0: "zero", 1: "oo-noh", 2: "doo-eh", 3: "tre", 4: "quattro", 5: "chinque", 6: "sei", 7: "sette", 8: "otto", 9: "nove",
-    10: "decei", 11: "undici", 12: "dodici", 13: "tredici", 14: "quattordici", 15: "quindici", 16: "sedici", 17: "diciassette",
-    18: "diciotto", 19: "diciannove", 20: "venti", 30: "trenta", 40: "quaranta", 50: "cinquanta", 60: "sessanta", 70: "settanta",
-    80: "ottanta", 90: "novanta", 100: "cento", 1000: "mille"
-}
- 
-def number_to_words(number):
-    if number < 20:
-        return number_words[number]
-    elif number < 100:
-        tens, unit = divmod(number, 10)
-        return number_words[tens * 10] + (" " + number_words[unit] if unit else "")
-    elif number < 1000:
-        hundreds, remainder = divmod(number, 100)
-        return (number_words[hundreds] + " centi" if hundreds > 1 else " centi") + (" " + number_to_words(remainder) if remainder else "")
-    elif number < 1000000:
-        thousands, remainder = divmod(number, 1000)
-        return (number_to_words(thousands) + " mille" if thousands > 1 else " mille") + (" " + number_to_words(remainder) if remainder else "")
-    elif number < 1000000000:
-        millions, remainder = divmod(number, 1000000)
-        return number_to_words(millions) + " millione" + (" " + number_to_words(remainder) if remainder else "")
-    elif number < 1000000000000:
-        billions, remainder = divmod(number, 1000000000)
-        return number_to_words(billions) + " milliardo" + (" " + number_to_words(remainder) if remainder else "")
-    else:
-        return str(number)
- 
- 
-def replace_numbers_with_words(text: str) -> str:
-    """
-    Function that replace number with string
-    Args:
-        text: str -> String where to sobstitute number with words
-    Returns:
-        str: String with only words
-    """
-    def replace(match):
-        number = int(match.group())
-        return number_to_words(number)
-    
-    print("TEXT: ", text)
- 
-    result = re.sub(r'\b\d+\b', replace, text)
- 
-    return result
  
 def normalize_text(text: str) -> str:
     """
@@ -275,11 +228,8 @@ def main(gen_text: str, language: str):
         if voice not in voices:
             voice = "main"
         text = re.sub(reg2, "", text)
-        
-        if language == "it":
-            gen_text_ = replace_numbers_with_words(text.strip())
-        else: 
-            gen_text_ = text.strip()
+    
+        gen_text_ = text.strip()
         
         print(ref_audio_, ref_text_)
         audio_segment, final_sample_rate, spectragram = infer_process(
@@ -320,3 +270,6 @@ def main(gen_text: str, language: str):
             if remove_silence:
                 remove_silence_for_generated_wav(f.name)
             print(f.name)
+            
+if __name__ == "__main__":
+    main("The Natù project is dedicated to inspiring individuals to embrace a more sustainable way of living by providing eco-friendly products and raising awareness about the importance of protecting the environment.", "en")
