@@ -434,6 +434,7 @@ def infer_batch_process(
     streaming=False,
     chunk_size=2048,
 ):
+    max_workers = None
     audio, sr = ref_audio
     if audio.shape[0] > 1:
         audio = torch.mean(audio, dim=0, keepdim=True)
@@ -493,13 +494,13 @@ def infer_batch_process(
                 generated_wave = generated_wave * rms / target_rms
 
             # wav -> numpy
-            generated_wave = generated_wave.squeeze().cpu().numpy()
+            generated_wave = generated_wave.squeeze().cpu().numpy() if torch.cuda.is_available() else generated_wave.squeeze().cuda().numpy()
 
             if streaming:
                 for j in range(0, len(generated_wave), chunk_size):
                     yield generated_wave[j : j + chunk_size], target_sample_rate
             else:
-                generated_cpu = generated[0].cpu().numpy()
+                generated_cpu = generated[0].cpu().numpy() if torch.cuda.is_available() else generated[0].cuda().numpy()
                 del generated
                 yield generated_wave, generated_cpu
 
@@ -508,7 +509,11 @@ def infer_batch_process(
             for chunk in process_batch(gen_text):
                 yield chunk
     else:
-        with ThreadPoolExecutor() as executor:
+        if max_workers is None:
+            import multiprocessing
+            max_workers = min(len(gen_text_batches), multiprocessing.cpu_count())
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [executor.submit(process_batch, gen_text) for gen_text in gen_text_batches]
             for future in progress.tqdm(futures) if progress is not None else futures:
                 result = future.result()
