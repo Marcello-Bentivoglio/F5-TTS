@@ -178,7 +178,7 @@ def normalize_text(text: str) -> str:
     return text
 
 # inference process
-def main(gen_text: str, language: str):
+def main(gen_text: str, language: str, index: int):
 
     main_voice = {"ref_audio": ref_audio, "ref_text": ref_text}
     if "voices" not in config:
@@ -264,7 +264,7 @@ def main(gen_text: str, language: str):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        with open(wave_path, "wb") as f:
+        with open(f"{wave_path}_{index}", "wb") as f:
             sf.write(f.name, final_wave, final_sample_rate)
             # Remove silence
             if remove_silence:
