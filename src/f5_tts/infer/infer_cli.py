@@ -84,7 +84,7 @@ output_file = config.get(
 )
 
 save_chunk = config.get("save_chunk", False)
-remove_silence = config.get("remove_silence", False)
+remove_silence = config.get("remove_silence", True)
 load_vocoder_from_local = config.get("load_vocoder_from_local", False)
 
 vocoder_name = config.get("vocoder_name", mel_spec_type)

@@ -575,7 +575,7 @@ def infer_batch_process(
 def remove_silence_for_generated_wav(filename):
     aseg = AudioSegment.from_file(filename)
     non_silent_segs = silence.split_on_silence(
-        aseg, min_silence_len=1000, silence_thresh=-50, keep_silence=500, seek_step=10
+        aseg, min_silence_len=400, silence_thresh=-50, keep_silence=0, seek_step=10
     )
     non_silent_wave = AudioSegment.silent(duration=0)
     for non_silent_seg in non_silent_segs:
